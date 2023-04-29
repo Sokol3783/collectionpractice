@@ -1,5 +1,16 @@
 package model;
 
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.PriorityQueue;
+import java.util.SortedSet;
+import java.util.stream.Collectors;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -21,53 +32,101 @@ import static org.junit.jupiter.api.Assertions.*;
 public class TestCollections {
 
     // 1 --------------------------------
-    @Test @Disabled
+    @Test 
     void testPrintList() {
-        //todo Распечатать содержимое используя for each
+        list.forEach(System.out::println);
     }
 
     // 2 --------------------------------
-    @Test @Disabled
+    @Test 
     void testChangeWeightOfFirstByOne() {
         //todo Изменить вес первой коробки на 1.
+        HeavyBox heavyBox = list.get(0);
+        heavyBox.setWeight(heavyBox.getWeight()+ 1);
         assertEquals(new HeavyBox(1,2,3,5), list.get(0));
     }
 
     // 3 --------------------------------
-    @Test @Disabled
+    @Test 
     void testDeleteLast() {
         //todo Удалить предпоследнюю коробку.
+        list.remove(list.size()-2);
         assertEquals(6, list.size());
         assertEquals(new HeavyBox(1,2,3,4), list.get(0));
         assertEquals(new HeavyBox(1,3,3,4), list.get(list.size()-2));
     }
 
     // 4 --------------------------------
-    @Test @Disabled
+    @Test 
     void testConvertToArray() {
         //todo Получить массив содержащий коробки из коллекции тремя способами и вывести на консоль.
-        HeavyBox[] arr = null;
-        assertArrayEquals(new HeavyBox[]{
-                new HeavyBox(1,2,3,4),
-                new HeavyBox(3,3,3,4),
-                new HeavyBox(2,6,5,3),
-                new HeavyBox(2,3,4,7),
-                new HeavyBox(1,3,3,4),
-                new HeavyBox(1,2,3,4),
-                new HeavyBox(1,1,1,1)
-        }, arr);
+      HeavyBox[] arr = Arrays.copyOf(list.toArray(), list.size(), HeavyBox[].class);
+
+      assertArrayEquals(new HeavyBox[]{
+          new HeavyBox(1,2,3,4),
+          new HeavyBox(3,3,3,4),
+          new HeavyBox(2,6,5,3),
+          new HeavyBox(2,3,4,7),
+          new HeavyBox(1,3,3,4),
+          new HeavyBox(1,2,3,4),
+          new HeavyBox(1,1,1,1)
+      }, arr);
+
+      System.out.println(Arrays.toString(arr));
+
+      arr = list.toArray(new HeavyBox[0]);
+
+      assertArrayEquals(new HeavyBox[]{
+          new HeavyBox(1,2,3,4),
+          new HeavyBox(3,3,3,4),
+          new HeavyBox(2,6,5,3),
+          new HeavyBox(2,3,4,7),
+          new HeavyBox(1,3,3,4),
+          new HeavyBox(1,2,3,4),
+          new HeavyBox(1,1,1,1)
+      }, arr);
+
+      System.out.println(Arrays.toString(arr));
+
+      arr = list.toArray(new HeavyBox[list.size()]);
+
+      assertArrayEquals(new HeavyBox[]{
+          new HeavyBox(1,2,3,4),
+          new HeavyBox(3,3,3,4),
+          new HeavyBox(2,6,5,3),
+          new HeavyBox(2,3,4,7),
+          new HeavyBox(1,3,3,4),
+          new HeavyBox(1,2,3,4),
+          new HeavyBox(1,1,1,1)
+      }, arr);
+
+      System.out.println(Arrays.toString(arr));
+
     }
 
     // 5 --------------------------------
-    @Test @Disabled
+    @Test 
     void testDeleteBoxesByWeight() {
         // todo удалить все коробки, которые весят 4
+        list.removeIf(s -> s.getWeight() == 4);
         assertEquals(3, list.size());
     }
 
     // 6 --------------------------------
-    @Test @Disabled
+    @Test 
     void testSortBoxesByWeight() {
+        list.sort(new Comparator<HeavyBox>() {
+            @Override
+            public int compare(HeavyBox o1, HeavyBox o2) {
+
+                int compare = Integer.compare(o1.getWeight(), o2.getWeight());
+                if (compare == 0) {
+                    return Double.compare(o1.getVolume(), o2.getVolume());
+                }
+                return compare;
+            }
+        });
+
         // отсортировать коробки по возрастанию веса. При одинаковом весе - по возрастанию объема
         assertEquals(new HeavyBox(1,1,1,1), list.get(0));
         assertEquals(new HeavyBox(2,3,4,7), list.get(6));
@@ -76,50 +135,61 @@ public class TestCollections {
     }
 
     // 7 --------------------------------
-    @Test @Disabled
+    @Test 
     void testClearList() {
         //todo Удалить все коробки.
+        list.removeAll(list);
         assertTrue(list.isEmpty());
     }
 
     // 8 --------------------------------
-    @Test @Disabled
+    @Test 
     void testReadAllLinesFromFileToList() {
         // todo Прочитать все строки в коллекцию
-        List<String> lines = null;
+        List<String> lines = reader.lines().toList();
         assertEquals(19, lines.size());
         assertEquals("", lines.get(8));
     }
 
     // 9 --------------------------------
-    @Test @Disabled
+    @Test 
     void testReadAllWordsFromFileToList() throws IOException {
         // todo прочитать все строки, разбить на слова и записать в коллекцию
         List<String> words = readAllWordsFromFileToList();
         assertEquals(257, words.size());
     }
 
-    List<String> readAllWordsFromFileToList() {
-
-        return null;
+    List<String> readAllWordsFromFileToList() throws IOException {
+        String line = "";
+        List<String> words = new ArrayList<>();
+        while ((line = reader.readLine()) != null ) {
+            String[] wordsInLine = line.replaceAll("\\W", " ").trim().split(" ");
+            for (String word : wordsInLine) {
+                if (word.length() > 0) words.add(word.toLowerCase());
+            }
+        }
+        return words;
     }
 
     // 10 -------------------------------
-    @Test @Disabled
-    void testFindLongestWord() {
+    @Test 
+    void testFindLongestWord() throws IOException {
         // todo Найти самое длинное слово
         assertEquals("conversations", findLongestWord());
     }
 
-    private String findLongestWord() {
-        return null;
+    private String findLongestWord() throws IOException {
+        List<String> strings = readAllWordsFromFileToList();
+        strings.sort(Comparator.comparing(s -> s.length()));
+        return strings.get(strings.size()-1);
     }
 
     // 11 -------------------------------
-    @Test @Disabled
-    void testAllWordsByAlphabetWithoutRepeat() {
+    @Test 
+    void testAllWordsByAlphabetWithoutRepeat() throws IOException {
         // todo Получить список всех слов по алфавиту без повторов
-        List<String> result = null;
+        List<String> result = new ArrayList<>(new HashSet<>(readAllWordsFromFileToList()));
+        result.sort(String.CASE_INSENSITIVE_ORDER);
 
         assertEquals("alice", result.get(5));
         assertEquals("all", result.get(6));
@@ -128,17 +198,19 @@ public class TestCollections {
     }
 
     // 12 -------------------------------
-    @Test @Disabled
-    void testFindMostFrequentWord() {
+    @Test 
+    void testFindMostFrequentWord() throws IOException {
         // todo Найти самое часто вcтречающееся слово
-        assertEquals("the", mostFrequentWord());
+       assertEquals("the", mostFrequentWord());
     }
 
     // 13 -------------------------------
-    @Test @Disabled
+    @Test 
     void testFindWordsByLengthInAlphabetOrder() throws IOException {
         // todo получить список слов, длиной не более 5 символов, переведенных в нижний регистр, в порядке алфавита, без повторов
-        List<String> strings = null;
+        List<String> strings = readAllWordsFromFileToList();
+        strings.removeIf(s -> s.length() > 5);
+        strings.sort(String.CASE_INSENSITIVE_ORDER);
 
         assertEquals(202, strings.size());
         assertEquals("a", strings.get(0));
@@ -146,8 +218,25 @@ public class TestCollections {
         assertEquals("would", strings.get(strings.size() - 1));
     }
 
-    private String mostFrequentWord() {
-        return null;
+    private String mostFrequentWord() throws IOException {
+        Map<String, Integer> map = new HashMap<>();
+        List<String> strings = readAllWordsFromFileToList();
+        int max = 0;
+        String frequentWord = "";
+        for (String word : strings) {
+            Integer count = map.get(word);
+            if (count != null) {
+                map.put(word, ++count);
+                if (count > max) {
+                    max = count;
+                    frequentWord = word;
+                }
+            } else {
+                map.put(word, 1);
+            }
+        }
+
+        return frequentWord;
     }
 
     List<HeavyBox> list;
