@@ -208,13 +208,13 @@ public class TestCollections {
     @Test 
     void testFindWordsByLengthInAlphabetOrder() throws IOException {
         // todo получить список слов, длиной не более 5 символов, переведенных в нижний регистр, в порядке алфавита, без повторов
-        List<String> strings = readAllWordsFromFileToList();
+        List<String> strings = new ArrayList<>(new HashSet<>(readAllWordsFromFileToList()));
         strings.removeIf(s -> s.length() > 5);
         strings.sort(String.CASE_INSENSITIVE_ORDER);
 
-        assertEquals(202, strings.size());
+        assertEquals(94, strings.size());
         assertEquals("a", strings.get(0));
-        assertEquals("alice", strings.get(10));
+        assertEquals("alice", strings.get(2));
         assertEquals("would", strings.get(strings.size() - 1));
     }
 
